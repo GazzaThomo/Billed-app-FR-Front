@@ -179,6 +179,10 @@ export default class {
             date: doc.date,
             status: doc.status,
           }));
+          // this sorts from oldest to newest, change b and a for newest to oldest
+          bills.sort((a, b) => {
+            return new Date(a.date) - new Date(b.date);
+          });
           return bills;
         })
         .catch((error) => {
