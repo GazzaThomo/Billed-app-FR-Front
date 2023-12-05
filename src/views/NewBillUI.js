@@ -1,8 +1,7 @@
-import VerticalLayout from './VerticalLayout.js'
+import VerticalLayout from "./VerticalLayout.js";
 
 export default () => {
-
-  return (`
+  return `
     <div class='layout'>
       ${VerticalLayout(120)}
       <div class='content'>
@@ -53,9 +52,10 @@ export default () => {
                     <label for="commentary" class="bold-label">Commentaire</label>
                     <textarea class="form-control blue-border" data-testid="commentary" rows="3"></textarea>
                   </div>
-                  <div class="col-half">
+                  <div class="col-half champ-justificatif">
                     <label for="file" class="bold-label">Justificatif</label>
                     <input required type="file" class="form-control blue-border" data-testid="file" />
+                    <p class = "file-type-error-message hidden" data-testid="file-type-error-message">Le fichier doit être du type .jpg, .jpg ou .png</p>
                   </div>
                 </div>
             </div>
@@ -70,5 +70,5 @@ export default () => {
         </div>
       </div>
     </div>
-  `)
-}
+  `;
+};
