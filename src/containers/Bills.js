@@ -41,6 +41,10 @@ export default class {
         .bills()
         .list()
         .then((snapshot) => {
+          //snapshot is the array from database
+          snapshot.sort((a, b) => {
+            return new Date(a.date) - new Date(b.date);
+          });
           const bills = snapshot.map((doc) => {
             try {
               return {
@@ -60,11 +64,6 @@ export default class {
             }
           });
           console.log("length", bills.length);
-
-          //Probably this, one or the other depending on the data type
-          bills.sort((a, b) => a.date - b.date);
-          // bills.sort((a, b) => new Date(a.date) - new Date(b.date));
-
           return bills;
         });
     }
