@@ -2,7 +2,15 @@
  * @jest-environment jsdom
  */
 
-import { screen, waitFor } from "@testing-library/dom";
+import {
+  getByTestId,
+  getAllByTestId,
+  screen,
+  waitFor,
+} from "@testing-library/dom";
+import "@testing-library/jest-dom";
+
+import userEvent from "@testing-library/user-event";
 import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
 import { ROUTES_PATH } from "../constants/routes.js";
@@ -42,6 +50,13 @@ describe("Given I am connected as an employee", () => {
       const antiChrono = (a, b) => (a < b ? 1 : -1);
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
+    });
+    test("When I click on eye icon, modal should show", () => {
+      document.body.innerHTML = BillsUI({ data: bills });
+      const firstIconEye = getAllByTestId(document.body, "icon-eye")[1];
+      console.log(firstIconEye);
+      userEvent.click(firstIconEye);
+      expect(getByTestId(document.body, "modaleFile")).toHaveClass("show");
     });
   });
 });
