@@ -52,11 +52,21 @@ describe("Given I am connected as an employee", () => {
       expect(dates).toEqual(datesSorted);
     });
     test("When I click on eye icon, modal should show", () => {
+      Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+      });
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({
+          type: "Employee",
+        })
+      );
+
       document.body.innerHTML = BillsUI({ data: bills });
-      const firstIconEye = getAllByTestId(document.body, "icon-eye")[1];
-      console.log(firstIconEye);
-      userEvent.click(firstIconEye);
-      expect(getByTestId(document.body, "modaleFile")).toHaveClass("show");
+      const firstIconEye = getAllByTestId(document.body, "icon-eye")[0];
+      userEvent.click("First icon: ", firstIconEye);
+      const modal = getByTestId(document.body, "modaleFile");
+      expect(modal).toHaveClass("show");
     });
   });
 });

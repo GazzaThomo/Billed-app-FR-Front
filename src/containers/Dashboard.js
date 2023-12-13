@@ -105,7 +105,6 @@ export default class {
       $(".dashboard-right-container div").html(DashboardFormUI(bill));
       $(".vertical-navbar").css({ height: "150vh" });
       this.counter++;
-      console.log("I am here");
     } else {
       $(`#open-bill${bill.id}`).css({ background: "#0D5AE5" });
 
@@ -114,7 +113,6 @@ export default class {
       `);
       $(".vertical-navbar").css({ height: "120vh" });
       this.counter++;
-      console.log("Else statement");
     }
     $("#icon-eye-d").click(this.handleClickIconEye);
     $("#btn-accept-bill").click((e) => this.handleAcceptSubmit(e, bill));
@@ -158,7 +156,6 @@ export default class {
 
     // add off("click") to remove any eventlistener that was previously on
     bills.forEach((bill) => {
-      console.log("initialized");
       $(`#open-bill${bill.id}`)
         .off("click")
         .click((e) => this.handleEditTicket(e, bill, bills));
