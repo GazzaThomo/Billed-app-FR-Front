@@ -1,6 +1,7 @@
 import VerticalLayout from "./VerticalLayout.js";
 import ErrorPage from "./ErrorPage.js";
 import LoadingPage from "./LoadingPage.js";
+import { formatDate, formatStatus } from "../app/format.js";
 
 import Actions from "./Actions.js";
 
@@ -21,10 +22,28 @@ const row = (bill) => {
 
 const rows = (data) => {
   //fixes test so that it passes, but conflicts with original bug solution
-  // data.sort((a, b) => {
-  //   return new Date(a.date) - new Date(b.date);
-  // });
-  return data && data.length ? data.map((bill) => row(bill)).join("") : "";
+  data?.sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
+  });
+  const bills = data.map((doc) => {
+    try {
+      return {
+        ...doc,
+        date: formatDate(doc.date),
+        status: formatStatus(doc.status),
+      };
+    } catch (e) {
+      // if for some reason, corrupted data was introduced, we manage here failing formatDate function
+      // log the error and return unformatted date in that case
+      console.log(e, "for", doc);
+      return {
+        ...doc,
+        date: doc.date,
+        status: formatStatus(doc.status),
+      };
+    }
+  });
+  return bills && bills.length ? bills.map((bill) => row(bill)).join("") : "";
 };
 
 export default ({ data: bills, loading, error }) => {
