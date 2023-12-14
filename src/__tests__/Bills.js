@@ -15,6 +15,7 @@ import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
 import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
+import Bills from "../containers/Bills.js";
 
 import router from "../app/Router.js";
 
@@ -51,22 +52,44 @@ describe("Given I am connected as an employee", () => {
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
     });
-    test("When I click on eye icon, modal should show", () => {
-      Object.defineProperty(window, "localStorage", {
-        value: localStorageMock,
-      });
-      window.localStorage.setItem(
-        "user",
-        JSON.stringify({
-          type: "Employee",
-        })
-      );
 
-      document.body.innerHTML = BillsUI({ data: bills });
-      const firstIconEye = getAllByTestId(document.body, "icon-eye")[0];
-      userEvent.click("First icon: ", firstIconEye);
-      const modal = getByTestId(document.body, "modaleFile");
-      expect(modal).toHaveClass("show");
+    describe("when I click on an eye icon", () => {
+      test("Then a modal should show", () => {
+        Object.defineProperty(window, "localStorage", {
+          value: localStorageMock,
+        });
+        window.localStorage.setItem(
+          "user",
+          JSON.stringify({
+            type: "Employee",
+          })
+        );
+
+        document.body.innerHTML = BillsUI({ data: bills });
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname });
+        };
+        const store = null;
+        const bill = new Bills({
+          document,
+          onNavigate,
+          store,
+          localStorage: window.localStorage,
+        });
+        const handleClickIconEye = jest.fn(bill.handleClickIconEye);
+        const firstIconEye = getAllByTestId(document.body, "icon-eye")[0];
+        firstIconEye.addEventListener("click", handleClickIconEye);
+        userEvent.click(firstIconEye);
+        expect(handleClickIconEye).toHaveBeenCalled();
+        const modal = getByTestId(document.body, "modaleFile");
+        expect(modal).toHaveClass("show");
+      });
     });
+
+    //to do
+    // describe("When I click on new bill",()=>{
+    //test("then new bill window should open")
+    //})
+    // test("Then bills are loaded") THIS IS MY GET FUNCTION
   });
 });
