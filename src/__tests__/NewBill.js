@@ -15,7 +15,7 @@ import NewBill from "../containers/NewBill.js";
 import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import router from "../app/Router.js";
-import { handleChangeFile } from "../containers/NewBill.js";
+import { handleChangeFile, handlesubmit } from "../containers/NewBill.js";
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -82,9 +82,7 @@ describe("Given I am connected as an employee", () => {
         });
         expect(fileInput.files[0]).toStrictEqual(fileToUpload);
 
-        //
-        // Use findByTestId to wait for the error message element to be present
-        const errorMessage = await screen.findByTestId(
+        const errorMessage = await screen.getByTestId(
           "file-type-error-message"
         );
         expect(errorMessage.classList.contains("hidden")).toBe(false);
@@ -134,8 +132,62 @@ describe("Given I am connected as an employee", () => {
         expect(errorMessage.classList.contains("hidden")).toBeTruthy();
       }); //TEST END
     });
-    // describe("When submit button is clicked", () => {
-    //   test("Then a new bill should be created", () => {});
-    // });
+    describe("When I click on submit", () => {
+      const testBillData = {
+        id: "56qADb6fIm2zOGGLzMBc",
+        vat: "60",
+        fileUrl: "testLink",
+        status: "pending",
+        type: "Hôtel et logement",
+        commentary: "Hotel séminaire",
+        name: "Dupont",
+        fileName: "testName.jpg",
+        date: "2014-06-07",
+        amount: 666,
+        commentAdmin: "très bien",
+        email: "a@a",
+        pct: 20,
+      };
+      test("Then bill should be submitted", () => {
+        const html = NewBillUI();
+        document.body.innerHTML = html;
+
+        Object.defineProperty(window, "localStorage", {
+          value: localStorageMock,
+        });
+        window.localStorage.setItem(
+          "user",
+          JSON.stringify({
+            type: "Employee",
+            email: "antoine@dupont.fr",
+          })
+        );
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname });
+        };
+
+        const store = null;
+        const newBill = new NewBill({
+          document,
+          onNavigate,
+          store,
+          localStorage: window.localStorage,
+        });
+
+        const expenseType = screen.getByTestId("expense-type");
+        const expenseName = screen.getByTestId("expense-name");
+        const date = screen.getByTestId("datepicker");
+        const amount = screen.getByTestId("amount");
+        const vat = screen.getByTestId("vat");
+        const pct = screen.getByTestId("pct");
+        const commentaire = screen.getByTestId("commentary");
+        const formBill = screen.getByTestId("form-new-bill");
+        const submitButton = screen.getByTestId("btn-send-bill");
+
+        userEvent.change(expenseType, { target: { value: testBillData.type } });
+      }); //END TEST
+      test("Then I should go back to the summary page", () => {});
+    });
+    test("Then a new bill should be created in API", () => {});
   });
 });
