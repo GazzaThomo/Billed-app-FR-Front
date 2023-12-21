@@ -5,6 +5,7 @@
 import {
   getByTestId,
   getAllByTestId,
+  fireEvent,
   screen,
   waitFor,
 } from "@testing-library/dom";
@@ -140,7 +141,7 @@ describe("Given I am connected as an employee", () => {
         status: "pending",
         type: "Hôtel et logement",
         commentary: "Hotel séminaire",
-        name: "Dupont",
+        name: "Hotel ritz",
         fileName: "testName.jpg",
         date: "2014-06-07",
         amount: 666,
@@ -148,7 +149,7 @@ describe("Given I am connected as an employee", () => {
         email: "a@a",
         pct: 20,
       };
-      test("Then bill should be submitted", () => {
+      test("Then bill should be submitted", async () => {
         const html = NewBillUI();
         document.body.innerHTML = html;
 
@@ -174,6 +175,10 @@ describe("Given I am connected as an employee", () => {
           localStorage: window.localStorage,
         });
 
+        //get the form and the submit button
+        const formBill = screen.getByTestId("form-new-bill");
+
+        //get the cells
         const expenseType = screen.getByTestId("expense-type");
         const expenseName = screen.getByTestId("expense-name");
         const date = screen.getByTestId("datepicker");
@@ -181,12 +186,40 @@ describe("Given I am connected as an employee", () => {
         const vat = screen.getByTestId("vat");
         const pct = screen.getByTestId("pct");
         const commentaire = screen.getByTestId("commentary");
-        const formBill = screen.getByTestId("form-new-bill");
-        const submitButton = screen.getByTestId("btn-send-bill");
 
-        userEvent.change(expenseType, { target: { value: testBillData.type } });
+        //insert the data into the cells
+        userEvent.selectOptions(expenseType, testBillData.type);
+        userEvent.change(expenseName, { target: { value: testBillData.name } });
+        userEvent.change(date, { target: testBillData.date });
+        userEvent.change(amount, { target: testBillData.amount });
+        userEvent.change(vat, { target: testBillData.vat });
+        userEvent.change(pct, { target: testBillData.pct });
+        userEvent.change(commentaire, { target: testBillData.commentary });
+
+        //create the submit handler
+        // const submitButton = screen.getByTestId("btn-send-bill");
+        const handleSubmit = jest.fn((e) => {
+          newBill.handleSubmit(e);
+        });
+        // submitButton.addEventListener("click", handleSubmit);
+        expect(expenseType.value).toBe(testBillData.type);
+        expect(expenseName.value).toBe(testBillData.name);
+        expect(date.value).toBe(testBillData.date);
+        expect(amount.value).toBe(testBillData.amount);
+        expect(vat.value).toBe(testBillData.vat);
+        expect(pct.value).toBe(testBillData.pct);
+        expect(commentaire.value).toBe(testBillData.commentary);
+
+        //not sure about this part
+        // userEvent.click(submitButton);
+        fireEvent.submit(formBill);
+
+        await expect(handleSubmit).toHaveBeenCalled();
+        expect(screen.getAllByText("Mes notes de frais")).toBeTruthy();
       }); //END TEST
-      test("Then I should go back to the summary page", () => {});
+      test("Then I should go back to the summary page", () => {
+        // not needed if i check in the other test ??
+      });
     });
     test("Then a new bill should be created in API", () => {});
   });
