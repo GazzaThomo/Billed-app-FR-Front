@@ -17,6 +17,7 @@ import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import router from "../app/Router.js";
 import { handleChangeFile, handlesubmit } from "../containers/NewBill.js";
+import mockstore from "../__mocks__/store.js";
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -149,7 +150,8 @@ describe("Given I am connected as an employee", () => {
         email: "a@a",
         pct: 20,
       };
-      test("Then bill should be submitted", async () => {
+
+      test("Then bill should be submitted and user returned to home page", async () => {
         const html = NewBillUI();
         document.body.innerHTML = html;
 
@@ -175,9 +177,6 @@ describe("Given I am connected as an employee", () => {
           localStorage: window.localStorage,
         });
 
-        //get the form and the submit button
-        const formBill = screen.getByTestId("form-new-bill");
-
         //get the cells
         const expenseType = screen.getByTestId("expense-type");
         const expenseName = screen.getByTestId("expense-name");
@@ -197,11 +196,6 @@ describe("Given I am connected as an employee", () => {
         userEvent.change(commentaire, { target: testBillData.commentary });
 
         //create the submit handler
-        // const submitButton = screen.getByTestId("btn-send-bill");
-        const handleSubmit = jest.fn((e) => {
-          newBill.handleSubmit(e);
-        });
-        // submitButton.addEventListener("click", handleSubmit);
         expect(expenseType.value).toBe(testBillData.type);
         expect(expenseName.value).toBe(testBillData.name);
         expect(date.value).toBe(testBillData.date);
@@ -211,16 +205,45 @@ describe("Given I am connected as an employee", () => {
         expect(commentaire.value).toBe(testBillData.commentary);
 
         //not sure about this part
+        //get the form and the submit button
+        const formBill = screen.getByTestId("form-new-bill");
+        const submitButton = screen.getByTestId("btn-send-bill");
         // userEvent.click(submitButton);
+        const handleSubmit = jest.fn((e) => {
+          newBill.handleSubmit(e);
+        });
+        formBill.addEventListener("submit", handleSubmit);
         fireEvent.submit(formBill);
 
         await expect(handleSubmit).toHaveBeenCalled();
         expect(screen.getAllByText("Mes notes de frais")).toBeTruthy();
       }); //END TEST
-      test("Then I should go back to the summary page", () => {
-        // not needed if i check in the other test ??
+
+      test("Then a new bill should be created in API", async () => {
+        const testBill = {
+          id: "47qAXb6fIm2zOKkLzMro",
+          vat: "80",
+          fileUrl:
+            "https://firebasestorage.googleapis.com/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=c1640e12-a24b-4b11-ae52-529112e9602a",
+          status: "pending",
+          type: "Hôtel et logement",
+          commentary: "séminaire billed",
+          name: "encore",
+          fileName: "preview-facture-free-201801-pdf-1.jpg",
+          date: "2004-04-04",
+          amount: 400,
+          commentAdmin: "ok",
+          email: "a@a",
+          pct: 20,
+        };
+        //problem, no post function in the store.js file in mocks ?? how to check the post ?
+        // need to use const spy = spyOn(store,"something")
+        // get post the stuff to server and get response await const postBill = something(testBill)
+        // expect(spy).toHaveBeenCalledTimes(1)
+        //expect(postBill).toBe() some sort of response from the server ?
+        const spy = spyOn(mockstore, "bills");
+        const postBill = bills.update(testBill);
       });
     });
-    test("Then a new bill should be created in API", () => {});
   });
 });
