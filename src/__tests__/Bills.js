@@ -61,6 +61,7 @@ describe("Given I am connected as an employee", () => {
       expect(dates).toEqual(datesSorted);
     });
 
+    //test GET
     test("Then bills are loaded from mock API", async () => {
       onNavigate(ROUTES_PATH.Bills);
       const eyes = await waitFor(() => screen.getAllByTestId("icon-eye"));
