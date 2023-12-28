@@ -151,6 +151,7 @@ describe("Given I am connected as an employee", () => {
         pct: 20,
       };
 
+      //POST TEST ?
       test("Then bill should be submitted and user returned to home page", async () => {
         const html = NewBillUI();
         document.body.innerHTML = html;
