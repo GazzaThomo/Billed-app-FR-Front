@@ -17,7 +17,9 @@ import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import router from "../app/Router.js";
 import { handleChangeFile, handlesubmit } from "../containers/NewBill.js";
-import mockstore from "../__mocks__/store.js";
+import mockStore from "../__mocks__/store.js";
+
+jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -46,11 +48,7 @@ describe("Given I am connected as an employee", () => {
     });
 
     describe("When a file is uploaded", () => {
-      test("If file type is incorrect format, then error message should appear", async () => {
-        //test
-        const html = NewBillUI();
-        document.body.innerHTML = html;
-        //to-do write assertion
+      beforeAll(() => {
         Object.defineProperty(window, "localStorage", {
           value: localStorageMock,
         });
@@ -63,6 +61,7 @@ describe("Given I am connected as an employee", () => {
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname });
         };
+
         const store = null;
         const newBill = new NewBill({
           document,
@@ -70,6 +69,12 @@ describe("Given I am connected as an employee", () => {
           store,
           localStorage: window.localStorage,
         });
+      });
+      test("If file type is incorrect format, then error message should appear", async () => {
+        //test
+        const html = NewBillUI();
+        document.body.innerHTML = html;
+        //to-do write assertion
         const fileToUpload = new File(["Test File"], "testFile.txt", {
           type: "text/plain",
         });
@@ -77,7 +82,7 @@ describe("Given I am connected as an employee", () => {
         const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
 
-        userEvent.upload(fileInput, fileToUpload);
+        await waitFor(() => userEvent.upload(fileInput, fileToUpload));
 
         await waitFor(() => {
           expect(handleChange).toHaveBeenCalled();
@@ -87,6 +92,7 @@ describe("Given I am connected as an employee", () => {
         const errorMessage = await screen.getByTestId(
           "file-type-error-message"
         );
+        //add the expect createBill to have been called ?
         expect(errorMessage.classList.contains("hidden")).toBe(false);
       }); //TEST END
 
@@ -94,26 +100,6 @@ describe("Given I am connected as an employee", () => {
         const html = NewBillUI();
         document.body.innerHTML = html;
         //to-do write assertion
-        Object.defineProperty(window, "localStorage", {
-          value: localStorageMock,
-        });
-        window.localStorage.setItem(
-          "user",
-          JSON.stringify({
-            type: "Employee",
-          })
-        );
-        const onNavigate = (pathname) => {
-          document.body.innerHTML = ROUTES({ pathname });
-        };
-
-        const store = null;
-        const newBill = new NewBill({
-          document,
-          onNavigate,
-          store,
-          localStorage: window.localStorage,
-        });
 
         const fileToUpload = new File(["test file"], "testImage.jpg", {
           type: "image/jpg",
@@ -122,18 +108,20 @@ describe("Given I am connected as an employee", () => {
         const fileInput = screen.getByTestId("file");
         const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
-        userEvent.upload(fileInput, fileToUpload);
+        await waitFor(() => userEvent.upload(fileInput, fileToUpload));
 
         await waitFor(() => {
           expect(handleChange).toHaveBeenCalled();
         });
         expect(fileInput.files[0]).toStrictEqual(fileToUpload);
-        const errorMessage = await screen.getByTestId(
-          "file-type-error-message"
+        const errorMessage = await waitFor(() =>
+          screen.getByTestId("file-type-error-message")
         );
-        expect(errorMessage.classList.contains("hidden")).toBeTruthy();
+        //add the expect createBill to have been called ?
+        expect(errorMessage.classList.contains("hidden")).toBe(true);
       }); //TEST END
     });
+
     describe("When I click on submit", () => {
       const testBillData = {
         id: "56qADb6fIm2zOGGLzMBc",
@@ -205,11 +193,7 @@ describe("Given I am connected as an employee", () => {
         expect(pct.value).toBe(testBillData.pct);
         expect(commentaire.value).toBe(testBillData.commentary);
 
-        //not sure about this part
-        //get the form and the submit button
         const formBill = screen.getByTestId("form-new-bill");
-        const submitButton = screen.getByTestId("btn-send-bill");
-        // userEvent.click(submitButton);
         const handleSubmit = jest.fn((e) => {
           newBill.handleSubmit(e);
         });
@@ -217,34 +201,9 @@ describe("Given I am connected as an employee", () => {
         fireEvent.submit(formBill);
 
         await expect(handleSubmit).toHaveBeenCalled();
+        expect(newBill.createBill).toHaveBeenCalled();
         expect(screen.getAllByText("Mes notes de frais")).toBeTruthy();
       }); //END TEST
-
-      test("Then a new bill should be created in API", async () => {
-        const testBill = {
-          id: "47qAXb6fIm2zOKkLzMro",
-          vat: "80",
-          fileUrl:
-            "https://firebasestorage.googleapis.com/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=c1640e12-a24b-4b11-ae52-529112e9602a",
-          status: "pending",
-          type: "Hôtel et logement",
-          commentary: "séminaire billed",
-          name: "encore",
-          fileName: "preview-facture-free-201801-pdf-1.jpg",
-          date: "2004-04-04",
-          amount: 400,
-          commentAdmin: "ok",
-          email: "a@a",
-          pct: 20,
-        };
-        //problem, no post function in the store.js file in mocks ?? how to check the post ?
-        // need to use const spy = spyOn(store,"something")
-        // get post the stuff to server and get response await const postBill = something(testBill)
-        // expect(spy).toHaveBeenCalledTimes(1)
-        //expect(postBill).toBe() some sort of response from the server ?
-        const spy = spyOn(mockstore, "bills");
-        const postBill = bills.update(testBill);
-      });
     });
   });
 });
