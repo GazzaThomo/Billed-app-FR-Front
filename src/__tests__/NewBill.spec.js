@@ -15,9 +15,8 @@ import NewBillUI from "../views/NewBillUI.js";
 import NewBill from "../containers/NewBill.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
-import router from "../app/Router.js";
-import { handleChangeFile, handlesubmit } from "../containers/NewBill.js";
 import mockStore from "../__mocks__/store.js";
+import router from "../app/Router.js";
 
 jest.mock("../app/store", () => mockStore);
 

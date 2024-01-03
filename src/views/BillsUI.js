@@ -25,7 +25,7 @@ const rows = (data) => {
   data?.sort((a, b) => {
     return new Date(b.date) - new Date(a.date);
   });
-  const bills = data.map((doc) => {
+  const bills = data?.map((doc) => {
     try {
       return {
         ...doc,
