@@ -10,7 +10,7 @@ import {
   waitFor,
 } from "@testing-library/dom";
 import "@testing-library/jest-dom";
-import { userEvent } from "@testing-library/user-event";
+import userEvent from "@testing-library/user-event";
 import NewBillUI from "../views/NewBillUI.js";
 import NewBill from "../containers/NewBill.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
@@ -48,7 +48,7 @@ describe("Given I am connected as an employee", () => {
     });
 
     describe("When a file is uploaded", () => {
-      beforeAll(() => {
+      beforeEach(() => {
         Object.defineProperty(window, "localStorage", {
           value: localStorageMock,
         });
@@ -58,66 +58,103 @@ describe("Given I am connected as an employee", () => {
             type: "Employee",
           })
         );
-        const onNavigate = (pathname) => {
-          document.body.innerHTML = ROUTES({ pathname });
-        };
 
-        const store = null;
-        const newBill = new NewBill({
+        const root = document.createElement("div");
+        root.setAttribute("id", "root");
+        document.body.append(root);
+        router();
+      });
+
+      test("If file type is correct format, then the file should be handled", async () => {
+        const newBillForm = new NewBill({
           document,
           onNavigate,
-          store,
-          localStorage: window.localStorage,
+          store: mockStore,
+          localStorage: localStorageMock,
         });
-      });
-      test("If file type is correct format, then the file should be handled", async () => {
-        const html = NewBillUI();
-        document.body.innerHTML = html;
-        //to-do write assertion
 
+        const handleChange = jest.fn(newBillForm.handleChangeFile);
         const fileToUpload = new File(["test file"], "testImage.jpg", {
           type: "image/jpg",
         });
-
         const fileInput = screen.getByTestId("file");
-        const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
-        await waitFor(() => userEvent.upload(fileInput, fileToUpload));
+        userEvent.upload(fileInput, fileToUpload);
 
-        await waitFor(() => {
-          expect(handleChange).toHaveBeenCalled();
-        });
         expect(fileInput.files[0]).toStrictEqual(fileToUpload);
+        expect(handleChange).toHaveBeenCalled();
         const errorMessage = await waitFor(() =>
           screen.getByTestId("file-type-error-message")
         );
-        //add the expect createBill to have been called ?
         expect(errorMessage.classList.contains("hidden")).toBe(true);
+        // const html = NewBillUI();
+        // document.body.innerHTML = html;
+        // //to-do write assertion
+
+        // const fileToUpload = new File(["test file"], "testImage.jpg", {
+        //   type: "image/jpg",
+        // });
+
+        // const fileInput = screen.getByTestId("file");
+        // const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
+        // fileInput.addEventListener("change", handleChange);
+        // await waitFor(() => userEvent.upload(fileInput, fileToUpload));
+
+        // await waitFor(() => {
+        //   expect(handleChange).toHaveBeenCalled();
+        // });
+        // expect(fileInput.files[0]).toStrictEqual(fileToUpload);
+        // const errorMessage = await waitFor(() =>
+        //   screen.getByTestId("file-type-error-message")
+        // );
+        // //add the expect createBill to have been called ?
+        // expect(errorMessage.classList.contains("hidden")).toBe(true);
       }); //TEST END
       test("If file type is incorrect format, then error message should appear", async () => {
-        //test
-        const html = NewBillUI();
-        document.body.innerHTML = html;
-        //to-do write assertion
-        const fileToUpload = new File(["Test File"], "testFile.txt", {
-          type: "text/plain",
+        const newBillForm = new NewBill({
+          document,
+          onNavigate,
+          store: mockStore,
+          localStorage: localStorageMock,
+        });
+
+        const handleChange = jest.fn(newBillForm.handleChangeFile);
+        const fileToUpload = new File(["test file"], "testImage.jpg", {
+          type: "image/jpg",
         });
         const fileInput = screen.getByTestId("file");
-        const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
+        userEvent.upload(fileInput, fileToUpload);
 
-        await waitFor(() => userEvent.upload(fileInput, fileToUpload));
-
-        await waitFor(() => {
-          expect(handleChange).toHaveBeenCalled();
-        });
         expect(fileInput.files[0]).toStrictEqual(fileToUpload);
-
-        const errorMessage = await screen.getByTestId(
-          "file-type-error-message"
+        expect(handleChange).toHaveBeenCalled();
+        const errorMessage = await waitFor(() =>
+          screen.getByTestId("file-type-error-message")
         );
-        //add the expect createBill to have been called ?
         expect(errorMessage.classList.contains("hidden")).toBe(false);
+        //test
+        // const html = NewBillUI();
+        // document.body.innerHTML = html;
+        // //to-do write assertion
+        // const fileToUpload = new File(["Test File"], "testFile.txt", {
+        //   type: "text/plain",
+        // });
+        // const fileInput = screen.getByTestId("file");
+        // const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
+        // fileInput.addEventListener("change", handleChange);
+
+        // await waitFor(() => userEvent.upload(fileInput, fileToUpload));
+
+        // await waitFor(() => {
+        //   expect(handleChange).toHaveBeenCalled();
+        // });
+        // expect(fileInput.files[0]).toStrictEqual(fileToUpload);
+
+        // const errorMessage = await screen.getByTestId(
+        //   "file-type-error-message"
+        // );
+        // //add the expect createBill to have been called ?
+        // expect(errorMessage.classList.contains("hidden")).toBe(false);
       }); //TEST END
     });
 
@@ -200,7 +237,6 @@ describe("Given I am connected as an employee", () => {
         fireEvent.submit(formBill);
 
         await expect(handleSubmit).toHaveBeenCalled();
-        // expect(newBill.createBill).toHaveBeenCalled();
         expect(screen.getAllByText("Mes notes de frais")).toBeTruthy();
       }); //END TEST
     });
