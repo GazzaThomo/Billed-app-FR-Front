@@ -65,7 +65,6 @@ describe("Given I am connected as an employee", () => {
     test("Then bills are loaded from mock API", async () => {
       onNavigate(ROUTES_PATH.Bills);
       const eyes = await waitFor(() => screen.getAllByTestId("icon-eye"));
-      console.error(eyes.length);
       expect(eyes.length).toBe(4);
       expect(eyes).toBeTruthy();
     });

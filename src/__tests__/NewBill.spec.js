@@ -66,7 +66,7 @@ describe("Given I am connected as an employee", () => {
         router();
       });
 
-      test("If file type is correct format, then the file should be handled", () => {
+      test("If file type is correct format, then the file should be handled", async () => {
         //to-do write assertion
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname });
@@ -86,16 +86,23 @@ describe("Given I am connected as an employee", () => {
 
         const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
-        userEvent.upload(fileInput, fileToUpload);
-        expect(handleChange).toHaveBeenCalled();
+        // userEvent.upload(fileInput, fileToUpload);
+        fireEvent.change(fileInput, {
+          target: {
+            files: [fileToUpload],
+          },
+        });
 
+        expect(handleChange).toHaveBeenCalled();
         expect(fileInput.files[0]).toStrictEqual(fileToUpload);
-        // const errorMessage = screen.getByTestId("file-type-error-message");
-        // expect(errorMessage.classList.contains("hidden")).toBe(true);
+        await waitFor(() => {
+          const errorMessage = screen.getByTestId("file-type-error-message");
+          expect(errorMessage.classList.contains("hidden")).toBe(true);
+        });
         expect(newBill.fileName).toBe("testImage.jpg");
       });
 
-      test("If file type is incorrect format, then file should not be handled", () => {
+      test("If file type is incorrect format, then file should not be handled", async () => {
         //to-do write assertion
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname });
@@ -115,18 +122,24 @@ describe("Given I am connected as an employee", () => {
 
         const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
-        userEvent.upload(fileInput, fileToUpload);
+        fireEvent.change(fileInput, {
+          target: {
+            files: [fileToUpload],
+          },
+        });
         expect(handleChange).toHaveBeenCalled();
 
         expect(fileInput.files[0]).toStrictEqual(fileToUpload);
-        // const errorMessage = screen.getByTestId("file-type-error-message");
-        // expect(errorMessage.classList.contains("hidden")).toBe(false);
+        await waitFor(() => {
+          const errorMessage = screen.getByTestId("file-type-error-message");
+          expect(errorMessage.classList.contains("hidden")).toBe(false);
+        });
         expect(newBill.fileName).toBe(null);
       });
     });
 
     describe("When I click on submit", () => {
-      test("then submit function should be called", () => {
+      test("then submit function should be called", async () => {
         window.localStorage.setItem(
           "user",
           JSON.stringify({
@@ -150,11 +163,14 @@ describe("Given I am connected as an employee", () => {
         });
 
         const formNewBill = screen.getByTestId("form-new-bill");
+        const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
         const handleSubmit = jest.fn(newBill.handleSubmit);
         formNewBill.addEventListener("submit", handleSubmit);
         fireEvent.submit(formNewBill);
 
-        expect(handleSubmit).toHaveBeenCalled();
+        await waitFor(() => {
+          expect(handleSubmitSpy).toHaveBeenCalled();
+        });
       });
       //POST TEST ?
       test("Then bill should be added", async () => {
