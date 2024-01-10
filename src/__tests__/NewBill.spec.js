@@ -2,18 +2,11 @@
  * @jest-environment jsdom
  */
 
-import {
-  getByTestId,
-  getAllByTestId,
-  fireEvent,
-  screen,
-  waitFor,
-} from "@testing-library/dom";
+import { fireEvent, screen, waitFor } from "@testing-library/dom";
 import "@testing-library/jest-dom";
-import userEvent from "@testing-library/user-event";
 import NewBillUI from "../views/NewBillUI.js";
 import NewBill from "../containers/NewBill.js";
-import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
+import { ROUTES } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from "../__mocks__/store.js";
 import router from "../app/Router.js";
@@ -174,7 +167,6 @@ describe("Given I am connected as an employee", () => {
       });
       //POST TEST ?
       test("Then bill should be added", async () => {
-        const post = jest.spyOn(mockStore, "bills");
         const testBillData = {
           id: "47qAXb6fIm2zOKkLzMro",
           vat: "80",
@@ -191,9 +183,35 @@ describe("Given I am connected as an employee", () => {
           email: "a@a",
           pct: 20,
         };
-        const postTestBillData = await mockStore.bills().update(testBillData);
-        expect(post).toHaveBeenCalledTimes(1);
-        expect(postTestBillData).toStrictEqual(testBillData);
+
+        //METHOD 1
+        document.body.innerHTML = NewBillUI();
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname });
+        };
+        const store = mockStore;
+        const newBill = new NewBill({
+          document,
+          onNavigate,
+          store,
+          localStorage,
+        });
+
+        const updateSpy = jest.spyOn(mockStore.bills(), "update");
+        let form = screen.getByTestId("form-new-bill");
+        form.addEventListener("submit", newBill.handleSubmit);
+        fireEvent.submit(form);
+        await waitFor(() => {
+          expect(updateSpy).toHaveBeenCalled();
+        });
+        const postedBill = await mockStore.bills().update();
+        expect(postedBill).toEqual(testBillData);
+
+        //METHOD 2
+        // const post = jest.spyOn(mockStore, "bills");
+        // const postTestBillData = await mockStore.bills().update(testBillData);
+        // expect(post).toHaveBeenCalledTimes(1);
+        // expect(postTestBillData).toStrictEqual(testBillData);
       }); //END TEST
     });
   });
