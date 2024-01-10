@@ -2,42 +2,44 @@
  * @jest-environment jsdom
  */
 
-import { fireEvent, screen, waitFor } from "@testing-library/dom";
+import { fireEvent, screen, waitFor, getByTestId } from "@testing-library/dom";
+import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import NewBillUI from "../views/NewBillUI.js";
 import NewBill from "../containers/NewBill.js";
-import { ROUTES } from "../constants/routes.js";
+import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from "../__mocks__/store.js";
 import router from "../app/Router.js";
+import usersTest from "../constants/usersTest.js";
 
 jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
-    // test("Then enveloppe icon in vertical layout should ne highlighted", async () => {
-    //   const html = NewBillUI();
-    //   document.body.innerHTML = html;
-    //   //to-do write assertion
-    //   Object.defineProperty(window, "localStorage", {
-    //     value: localStorageMock,
-    //   });
-    //   window.localStorage.setItem(
-    //     "user",
-    //     JSON.stringify({
-    //       type: "Employee",
-    //     })
-    //   );
-    //   const root = document.createElement("div");
-    //   root.setAttribute("id", "root");
-    //   document.body.append(root);
-    //   router();
-    //   window.onNavigate(ROUTES_PATH.NewBill);
-    //   await waitFor(() => screen.getByTestId("icon-mail"));
-    //   const mailIcon = screen.getByTestId("icon-mail");
-    //   //to-do write expect expression
-    //   expect(mailIcon.classList.contains("active-icon")).toBeTruthy();
-    // });
+    test("Then enveloppe icon in vertical layout should ne highlighted", async () => {
+      const html = NewBillUI();
+      document.body.innerHTML = html;
+      //to-do write assertion
+      Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+      });
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({
+          type: "Employee",
+        })
+      );
+      const root = document.createElement("div");
+      root.setAttribute("id", "root");
+      document.body.append(root);
+      router();
+      window.onNavigate(ROUTES_PATH.NewBill);
+      await waitFor(() => screen.getByTestId("icon-mail"));
+      const mailIcon = screen.getByTestId("icon-mail");
+      //to-do write expect expression
+      expect(mailIcon.classList.contains("active-icon")).toBeTruthy();
+    });
 
     describe("When a file is uploaded", () => {
       beforeAll(() => {
@@ -75,11 +77,19 @@ describe("Given I am connected as an employee", () => {
         const fileToUpload = new File(["test file"], "testImage.jpg", {
           type: "image/jpg",
         });
-        const fileInput = screen.getByTestId("file");
+        // const fileInput = screen.getByTestId("file");
+        const fileInput = document.querySelector(`input[data-testid="file"]`);
 
         const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
-        // userEvent.upload(fileInput, fileToUpload);
+        // await waitFor(() => {
+        //   fireEvent.change(fileInput, {
+        //     target: {
+        //       files: [fileToUpload],
+        //     },
+        //   });
+        //   // console.log(fileInput.files);
+        // });
         fireEvent.change(fileInput, {
           target: {
             files: [fileToUpload],
@@ -111,15 +121,17 @@ describe("Given I am connected as an employee", () => {
         const fileToUpload = new File(["test file"], "testImage.jpg", {
           type: "image/jpg",
         });
-        const fileInput = screen.getByTestId("file");
+        const fileInput = document.querySelector(`input[data-testid="file"]`);
 
         const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
         fileInput.addEventListener("change", handleChange);
+        // userEvent.upload(fileInput, fileToUpload);
         fireEvent.change(fileInput, {
           target: {
             files: [fileToUpload],
           },
         });
+        console.log(fileInput.files);
         expect(handleChange).toHaveBeenCalled();
 
         expect(fileInput.files[0]).toStrictEqual(fileToUpload);
@@ -133,6 +145,7 @@ describe("Given I am connected as an employee", () => {
 
     describe("When I click on submit", () => {
       test("then submit function should be called", async () => {
+        //Try and add a file to see if name error disappears
         window.localStorage.setItem(
           "user",
           JSON.stringify({
@@ -165,7 +178,8 @@ describe("Given I am connected as an employee", () => {
           expect(handleSubmitSpy).toHaveBeenCalled();
         });
       });
-      //POST TEST ?
+
+      //POST TEST
       test("Then bill should be added", async () => {
         const testBillData = {
           id: "47qAXb6fIm2zOKkLzMro",
@@ -184,34 +198,10 @@ describe("Given I am connected as an employee", () => {
           pct: 20,
         };
 
-        //METHOD 1
-        document.body.innerHTML = NewBillUI();
-        const onNavigate = (pathname) => {
-          document.body.innerHTML = ROUTES({ pathname });
-        };
-        const store = mockStore;
-        const newBill = new NewBill({
-          document,
-          onNavigate,
-          store,
-          localStorage,
-        });
-
-        const updateSpy = jest.spyOn(mockStore.bills(), "update");
-        let form = screen.getByTestId("form-new-bill");
-        form.addEventListener("submit", newBill.handleSubmit);
-        fireEvent.submit(form);
-        await waitFor(() => {
-          expect(updateSpy).toHaveBeenCalled();
-        });
-        const postedBill = await mockStore.bills().update();
-        expect(postedBill).toEqual(testBillData);
-
-        //METHOD 2
-        // const post = jest.spyOn(mockStore, "bills");
-        // const postTestBillData = await mockStore.bills().update(testBillData);
-        // expect(post).toHaveBeenCalledTimes(1);
-        // expect(postTestBillData).toStrictEqual(testBillData);
+        const post = jest.spyOn(mockStore, "bills");
+        const postTestBillData = await mockStore.bills().update(testBillData);
+        expect(post).toHaveBeenCalledTimes(1);
+        expect(postTestBillData).toStrictEqual(testBillData);
       }); //END TEST
     });
   });
