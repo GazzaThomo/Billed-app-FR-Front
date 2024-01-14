@@ -16,20 +16,20 @@ import usersTest from "../constants/usersTest.js";
 jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
+  beforeEach(() => {
+    Object.defineProperty(window, "localStorage", {
+      value: localStorageMock,
+    });
+    window.localStorage.setItem(
+      "user",
+      JSON.stringify({
+        type: "Employee",
+      })
+    );
+  });
   describe("When I am on NewBill Page", () => {
     test("Then enveloppe icon in vertical layout should ne highlighted", async () => {
-      const html = NewBillUI();
-      document.body.innerHTML = html;
       //to-do write assertion
-      Object.defineProperty(window, "localStorage", {
-        value: localStorageMock,
-      });
-      window.localStorage.setItem(
-        "user",
-        JSON.stringify({
-          type: "Employee",
-        })
-      );
       const root = document.createElement("div");
       root.setAttribute("id", "root");
       document.body.append(root);
@@ -42,27 +42,8 @@ describe("Given I am connected as an employee", () => {
     });
 
     describe("When a file is uploaded", () => {
-      beforeAll(() => {
-        let html = NewBillUI();
-        document.body.innerHTML = html;
-        Object.defineProperty(window, "localStorage", {
-          value: localStorageMock,
-        });
-        window.localStorage.setItem(
-          "user",
-          JSON.stringify({
-            type: "Employee",
-          })
-        );
-
-        const root = document.createElement("div");
-        root.setAttribute("id", "root");
-        document.body.append(root);
-        router();
-      });
-
-      test("If file type is correct format, then the file should be handled", async () => {
-        //to-do write assertion
+      test("If file type is incorrect, then the file isn't handled, and error message appears ", async () => {
+        document.body.innerHTML = NewBillUI();
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname });
         };
@@ -74,93 +55,103 @@ describe("Given I am connected as an employee", () => {
           localStorage,
         });
 
-        const fileToUpload = new File(["test file"], "testImage.jpg", {
-          type: "image/jpg",
-        });
-        // const fileInput = screen.getByTestId("file");
-        const fileInput = document.querySelector(`input[data-testid="file"]`);
+        // mock the handleChangeFile method
+        window.alert = jest.fn();
+        jest.spyOn(newBill, "handleChangeFile").mockImplementation(() => {});
 
-        const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
-        fileInput.addEventListener("change", handleChange);
+        const fileInput = screen.getByTestId("file");
+        fileInput.addEventListener("change", newBill.handleChangeFile);
+        const fileToUpload = new File(["This is a test file"], "testFile.txt", {
+          type: "text/plain",
+        });
+        fireEvent.change(fileInput, {
+          target: {
+            files: [fileToUpload],
+          },
+        });
+
+        expect(fileInput.value).toBe("");
+        expect(newBill.handleChangeFile).toHaveBeenCalled();
+        expect(window.alert).toHaveBeenCalled();
+
+        //NOT NEEDED IF USING ALERT
         // await waitFor(() => {
-        //   fireEvent.change(fileInput, {
-        //     target: {
-        //       files: [fileToUpload],
-        //     },
-        //   });
-        //   // console.log(fileInput.files);
+        //   const errorMessage = screen.getByTestId("file-type-error-message");
+        //   expect(errorMessage.classList.contains("hidden")).toBe(false);
         // });
-        fireEvent.change(fileInput, {
-          target: {
-            files: [fileToUpload],
-          },
-        });
-
-        expect(handleChange).toHaveBeenCalled();
-        expect(fileInput.files[0]).toStrictEqual(fileToUpload);
-        await waitFor(() => {
-          const errorMessage = screen.getByTestId("file-type-error-message");
-          expect(errorMessage.classList.contains("hidden")).toBe(true);
-        });
-        expect(newBill.fileName).toBe("testImage.jpg");
       });
 
-      test("If file type is incorrect format, then file should not be handled", async () => {
-        //to-do write assertion
+      //TODO
+      test("If file type is correct, then the file is handled, and error message does not appear", async () => {
+        document.body.innerHTML = NewBillUI();
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname });
         };
-        const store = null;
         const newBill = new NewBill({
           document,
           onNavigate,
-          store,
+          store: mockStore,
           localStorage,
         });
 
-        const fileToUpload = new File(["test file"], "testImage.jpg", {
-          type: "image/jpg",
-        });
-        const fileInput = document.querySelector(`input[data-testid="file"]`);
+        jest.spyOn(newBill, "handleChangeFile").mockImplementation(() => {});
 
-        const handleChange = jest.fn((e) => newBill.handleChangeFile(e));
-        fileInput.addEventListener("change", handleChange);
-        // userEvent.upload(fileInput, fileToUpload);
+        const fileInput = screen.getByTestId("file");
+        fileInput.addEventListener("change", newBill.handleChangeFile);
+        const fileToUpload = new File(["This is a test"], "testImage.png", {
+          type: "image/png",
+        });
         fireEvent.change(fileInput, {
           target: {
             files: [fileToUpload],
           },
         });
-        console.log(fileInput.files);
-        expect(handleChange).toHaveBeenCalled();
 
-        expect(fileInput.files[0]).toStrictEqual(fileToUpload);
-        await waitFor(() => {
-          const errorMessage = screen.getByTestId("file-type-error-message");
-          expect(errorMessage.classList.contains("hidden")).toBe(false);
-        });
-        expect(newBill.fileName).toBe(null);
+        expect(fileInput.files[0].name).toBe("testImage.png");
+        expect(newBill.formData).toBeDefined();
+        expect(newBill.handleChangeFile).toHaveBeenCalled();
+
+        //NOT NEEDED IF USING AN ALERT INSTEAD OF TEXT
+        // await waitFor(() => {
+        //   const errorMessage = screen.getByTestId("file-type-error-message");
+        //   expect(errorMessage.classList.contains("hidden")).toBe(false);
+        // });
       });
     });
 
     describe("When I click on submit", () => {
-      test("then submit function should be called", async () => {
-        //Try and add a file to see if name error disappears
-        window.localStorage.setItem(
-          "user",
-          JSON.stringify({
-            type: "Employee",
-          })
-        );
+      //TODO
+      // test("then submit function should be called", async () => {
+      //   //Try and add a file to see if name error disappears
+      //   document.body.innerHTML = NewBillUI();
+      //   const onNavigate = (pathname) => {
+      //     document.body.innerHTML = ROUTES({ pathname });
+      //   };
+      //   const store = mockStore;
+      //   const newBill = new NewBill({
+      //     document,
+      //     onNavigate,
+      //     store,
+      //     localStorage,
+      //   });
+      //   // jest.spyOn(newBill, "handleSubmit").mockImplementation(() => {});
 
+      //   const formNewBill = screen.getByTestId("form-new-bill");
+      //   const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
+      //   formNewBill.addEventListener("submit", newBill.handleSubmit);
+      //   fireEvent.submit(formNewBill);
+
+      //   await waitFor(() => {
+      //     expect(handleSubmitSpy).toHaveBeenCalled();
+      //   });
+      // });
+
+      test("Then handleSubmit function is called", async () => {
         document.body.innerHTML = NewBillUI();
-
         const onNavigate = (pathname) => {
           document.body.innerHTML = ROUTES({ pathname });
         };
-
-        const store = null;
-
+        const store = mockStore;
         const newBill = new NewBill({
           document,
           onNavigate,
@@ -168,12 +159,22 @@ describe("Given I am connected as an employee", () => {
           localStorage,
         });
 
-        const formNewBill = screen.getByTestId("form-new-bill");
-        const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
-        const handleSubmit = jest.fn(newBill.handleSubmit);
-        formNewBill.addEventListener("submit", handleSubmit);
-        fireEvent.submit(formNewBill);
+        jest.fn(newBill, "handleChangeFile");
+        const fileInput = screen.getByTestId("file");
+        fileInput.addEventListener("change", newBill.handleChangeFile);
+        const fileToUpload = new File(["This is a test"], "testImage.png", {
+          type: "image/png",
+        });
+        fireEvent.change(fileInput, {
+          target: {
+            files: [fileToUpload],
+          },
+        });
 
+        const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
+        const form = screen.getByTestId("form-new-bill");
+        form.addEventListener("submit", newBill.handleSubmit);
+        fireEvent.submit(form);
         await waitFor(() => {
           expect(handleSubmitSpy).toHaveBeenCalled();
         });

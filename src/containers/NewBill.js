@@ -22,7 +22,7 @@ export default class NewBill {
     // console.log(e);
     const file = this.document.querySelector(`input[data-testid="file"]`)
       .files[0];
-    const filePath = e.target.value.split(/\\/g);
+    const filePath = file.name.split(/\\/g);
     const fileName = filePath[filePath.length - 1];
     const fileType = this.getFileExtension(fileName);
     const fileTypeValid = this.checkFileType(fileType);
@@ -45,15 +45,19 @@ export default class NewBill {
           },
         })
         .then(({ fileUrl, key }) => {
-          console.log(fileUrl);
+          // console.log(fileUrl);
           this.billId = key;
           this.fileUrl = fileUrl;
           this.fileName = fileName;
         })
         .catch((error) => console.error(error));
+      this.formData = formData;
     } else {
       //do something else if file type is wrong
-      fileTypeElement.classList.remove("hidden");
+      // fileTypeElement.classList.remove("hidden");
+      alert(
+        "Mauvais format de fichier ! merci de sélectionner un fichier au format jpg, jpeg ou png."
+      );
     }
   };
   handleSubmit = (e) => {
