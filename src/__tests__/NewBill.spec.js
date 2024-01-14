@@ -120,32 +120,7 @@ describe("Given I am connected as an employee", () => {
     });
 
     describe("When I click on submit", () => {
-      //TODO
-      // test("then submit function should be called", async () => {
-      //   //Try and add a file to see if name error disappears
-      //   document.body.innerHTML = NewBillUI();
-      //   const onNavigate = (pathname) => {
-      //     document.body.innerHTML = ROUTES({ pathname });
-      //   };
-      //   const store = mockStore;
-      //   const newBill = new NewBill({
-      //     document,
-      //     onNavigate,
-      //     store,
-      //     localStorage,
-      //   });
-      //   // jest.spyOn(newBill, "handleSubmit").mockImplementation(() => {});
-
-      //   const formNewBill = screen.getByTestId("form-new-bill");
-      //   const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
-      //   formNewBill.addEventListener("submit", newBill.handleSubmit);
-      //   fireEvent.submit(formNewBill);
-
-      //   await waitFor(() => {
-      //     expect(handleSubmitSpy).toHaveBeenCalled();
-      //   });
-      // });
-
+      //TODO : CORRECT THE ERROR SOMEHOW
       test("Then handleSubmit function is called", async () => {
         document.body.innerHTML = NewBillUI();
         const onNavigate = (pathname) => {
