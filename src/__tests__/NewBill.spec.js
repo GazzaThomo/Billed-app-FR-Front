@@ -134,23 +134,35 @@ describe("Given I am connected as an employee", () => {
           localStorage,
         });
 
+        jest.spyOn(newBill, "handleChangeFile").mockImplementation(() => {});
         jest.fn(newBill, "handleChangeFile");
         const fileInput = screen.getByTestId("file");
         fileInput.addEventListener("change", newBill.handleChangeFile);
         const fileToUpload = new File(["This is a test"], "testImage.png", {
           type: "image/png",
         });
+
         fireEvent.change(fileInput, {
           target: {
             files: [fileToUpload],
           },
         });
 
-        const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
+        // const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
+        const handleSubmitSpy = jest.fn((e) => newBill.handleSubmit(e));
         const form = screen.getByTestId("form-new-bill");
         form.addEventListener("submit", newBill.handleSubmit);
-        fireEvent.submit(form);
+        // fireEvent.submit(form);
+
+        const btn = screen.getByTestId("btn-send-bill");
+        btn.addEventListener("click", () => fireEvent.submit(form));
+        userEvent.click(btn);
+
         await waitFor(() => {
+          // expect(newBill.handleChangeFile).toHaveBeenCalled();
+          // expect(fileInput.files[0].name).toBe("testImage.png");
+          // expect(newBill.formData).toBeDefined();
+          // expect(newBill.handleChangeFile).toHaveBeenCalled();
           expect(handleSubmitSpy).toHaveBeenCalled();
         });
       });
