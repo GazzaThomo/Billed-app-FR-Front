@@ -34,35 +34,39 @@ describe("Given I am connected as an employee", () => {
           type: "Employee",
         })
       );
+    });
+
+    test("Then bill icon in vertical layout should be highlighted", async () => {
       const root = document.createElement("div");
       root.setAttribute("id", "root");
       document.body.append(root);
       router();
-    });
-
-    test("Then bill icon in vertical layout should be highlighted", async () => {
       window.onNavigate(ROUTES_PATH.Bills);
       await waitFor(() => screen.getByTestId("icon-window"));
       const windowIcon = screen.getByTestId("icon-window");
       expect(windowIcon.classList.contains("active-icon")).toBeTruthy();
     });
 
-    // test("Then bills should be ordered from earliest to latest", async () => {
-    //   document.body.innerHTML = BillsUI({ data: bills });
-    //   const dates = await waitFor(() =>
-    //     screen
-    //       .getAllByText(
-    //         /^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
-    //       )
-    //       .map((a) => a.innerHTML)
-    //   );
-    //   const antiChrono = (a, b) => (a < b ? 1 : -1);
-    //   const datesSorted = [...dates].sort(antiChrono);
-    //   expect(dates).toEqual(datesSorted);
-    // });
+    test("Then bills should be ordered from earliest to latest", async () => {
+      document.body.innerHTML = BillsUI({ data: bills });
+      const dates = await waitFor(() =>
+        screen
+          .getAllByText(
+            /^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
+          )
+          .map((a) => a.innerHTML)
+      );
+      const antiChrono = (a, b) => (a < b ? 1 : -1);
+      const datesSorted = [...dates].sort(antiChrono);
+      expect(dates).toEqual(datesSorted);
+    });
 
     //test GET
     test("Then bills are loaded from mock API", async () => {
+      const root = document.createElement("div");
+      root.setAttribute("id", "root");
+      document.body.append(root);
+      router();
       onNavigate(ROUTES_PATH.Bills);
       const eyes = await waitFor(() => screen.getAllByTestId("icon-eye"));
       expect(eyes.length).toBe(4);
