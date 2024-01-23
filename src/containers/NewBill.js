@@ -98,7 +98,6 @@ export default class NewBill {
     } else {
       console.log("File type is not valid");
     }
-    console.log("the function has been called");
   };
 
   // not need to cover this function by tests
