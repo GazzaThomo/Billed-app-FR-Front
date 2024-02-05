@@ -20,31 +20,61 @@ const row = (bill) => {
     `;
 };
 
+////////////////////////////// ORIGINAL FIX
+// const rows = (data) => {
+//   //fixes test so that it passes, but conflicts with original bug solution
+//   data?.sort((a, b) => {
+//     return new Date(b.date) - new Date(a.date);
+//   });
+//   // console.log(data);
+//   const bills = data?.map((doc) => {
+//     try {
+//       return {
+//         ...doc,
+//         date: formatDate(doc.date),
+//         status: formatStatus(doc.status),
+//       };
+//     } catch (e) {
+//       // if for some reason, corrupted data was introduced, we manage here failing formatDate function
+//       // log the error and return unformatted date in that case
+//       console.log(e, "for", doc);
+//       return {
+//         ...doc,
+//         date: doc.date,
+//         status: formatStatus(doc.status),
+//       };
+//     }
+//   });
+//   return bills && bills.length ? bills.map((bill) => row(bill)).join("") : "";
+// };
+
+///////////////////// THIS IS ORIGINAL CODE BEFORE CORRECTION
+// const rows = (data) => {
+//   return data && data.length
+//     ? data
+//         .sort()
+//         .map((bill) => row(bill))
+//         .join("")
+//     : "";
+// };
+
+const sortByDateDesc = (a, b) => {
+  // create the dates
+  const dateA = new Date(a.date);
+  const dateB = new Date(b.date);
+
+  // Return comparison for descending order
+  return dateB - dateA;
+};
+
 const rows = (data) => {
-  //fixes test so that it passes, but conflicts with original bug solution
-  data?.sort((a, b) => {
-    return new Date(b.date) - new Date(a.date);
-  });
-  console.log(data);
-  const bills = data?.map((doc) => {
-    try {
-      return {
-        ...doc,
-        // date: formatDate(doc.date),
-        status: formatStatus(doc.status),
-      };
-    } catch (e) {
-      // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-      // log the error and return unformatted date in that case
-      console.log(e, "for", doc);
-      return {
-        ...doc,
-        date: doc.date,
-        status: formatStatus(doc.status),
-      };
-    }
-  });
-  return bills && bills.length ? bills.map((bill) => row(bill)).join("") : "";
+  // !data checks if data is falsey, !data.length checks if data is empty array. Serves as early exit in case of runtime errors
+  if (!data || !data.length) return "";
+
+  return data
+    .sort(sortByDateDesc) // Sort by date in descending order
+    .map((bill) => row(bill)) // Map each bill to an HTML row
+    .join(""); // Join all rows into a single string
 };
 
 export default ({ data: bills, loading, error }) => {
