@@ -36,6 +36,7 @@ export default class {
       $("#modaleFile").modal("show");
   };
 
+  /////////////// OLD FUNCTION, NOT USE NOW ONLY FOR COMPARAISON
   // getBills = () => {
   //   if (this.store) {
   //     return this.store
