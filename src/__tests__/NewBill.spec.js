@@ -175,6 +175,82 @@ describe("Given I am connected as an employee", () => {
         expect(post).toHaveBeenCalledTimes(1);
         expect(postTestBillData).toStrictEqual(testBillData);
       }); //END TEST
+
+      describe("When there is a problem with API", () => {
+        test("Then should fail with a 404", async () => {
+          //Here we spy on the console, see ./containers/NewBill.js line 112
+          const postSpy = jest.spyOn(console, "error");
+
+          // Directly mocking the store to simulate the behavior for this test scenario
+          //We only want to check the update for an error, as that's the function that "post's" the bill. So we modify the response from the API
+          const mockStore = {
+            bills: jest.fn(() => newBill.store),
+            create: jest.fn(() => Promise.resolve({})),
+            update: jest.fn(() => Promise.reject(new Error("404"))),
+          };
+
+          // Initialize NewBill with the mocked store
+          const newBill = new NewBill({
+            document,
+            onNavigate,
+            store: mockStore, // Use the mockStore directly
+            localStorage,
+          });
+
+          // form submit stuff
+          const form = screen.getByTestId("form-new-bill");
+          form.addEventListener("submit", (e) => newBill.handleSubmit(e));
+
+          // Trigger form submission
+          fireEvent.submit(form);
+
+          // Wait for all promises to finish
+          await new Promise(process.nextTick);
+
+          // Verify that console.error was called with an Error containing "404"
+          expect(postSpy).toHaveBeenCalledWith(expect.any(Error));
+          expect(postSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ message: "404" })
+          );
+        });
+
+        test("Then should fail with a 500", async () => {
+          //Here we spy on the console, see ./containers/NewBill.js line 112
+          const postSpy = jest.spyOn(console, "error");
+
+          // Directly mocking the store to simulate the behavior for this test scenario
+          //We only want to check the update for an error, as that's the function that "post's" the bill. So we modify the response from the API
+          const mockStore = {
+            bills: jest.fn(() => newBill.store),
+            create: jest.fn(() => Promise.resolve({})),
+            update: jest.fn(() => Promise.reject(new Error("500"))),
+          };
+
+          // Initialize NewBill with the mocked store
+          const newBill = new NewBill({
+            document,
+            onNavigate,
+            store: mockStore, // Use the mockStore directly
+            localStorage,
+          });
+
+          // form submit stuff
+          const form = screen.getByTestId("form-new-bill");
+          form.addEventListener("submit", (e) => newBill.handleSubmit(e));
+
+          // Trigger form submission
+          fireEvent.submit(form);
+
+          // Wait for all promises to finish
+          await new Promise(process.nextTick);
+
+          // Verify that console.error was called with an Error containing "404"
+          expect(postSpy).toHaveBeenCalledWith(expect.any(Error));
+          expect(postSpy).toHaveBeenCalledWith(
+            expect.objectContaining({ message: "500" })
+          );
+        });
+      });
     });
   });
 });
