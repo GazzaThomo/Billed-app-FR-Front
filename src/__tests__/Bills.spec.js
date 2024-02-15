@@ -165,6 +165,7 @@ describe("Given I am connected as an employee", () => {
       test("gets bill from API and fails with 404 error", async () => {
         // mocks the bills method of the mockStore object to simulate an API call that fails.
         // mock implementation is set up to only affect the next call (mockImplementationOnce) so next tests aren't affected
+        mockStore.bills.mockImplementationOnce(() => {
           return {
             list: () => {
               //simulate api response with rejected promise
