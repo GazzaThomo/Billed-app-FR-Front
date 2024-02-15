@@ -36,6 +36,7 @@ export default class {
       $("#modaleFile").modal("show");
   };
 
+  //THIS IS OLD CODE, ONLY HERE FOR ME TO COMPARE
   // getBills = () => {
   //   if (this.store) {
   //     return this.store
